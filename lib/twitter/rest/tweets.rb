@@ -201,34 +201,6 @@ module Twitter
         end.compact
       end
 
-      # Updates the authenticating user's status with media
-      #
-      # @see https://dev.twitter.com/rest/reference/post/statuses/update_with_media
-      # @note A status update with text/media identical to the authenticating user's current status will NOT be ignored
-      # @rate_limited No
-      # @authentication Requires user context
-      # @raise [Twitter::Error::Unauthorized] Error raised when supplied user credentials are not valid.
-      # @return [Twitter::Tweet] The created Tweet.
-      # @param status [String] The text of your status update, up to 140 characters.
-      # @param media [File, Array<File>] An image file or array of image files (PNG, JPEG or GIF).
-      # @param options [Hash] A customizable set of options.
-      # @option options [Boolean, String, Integer] :possibly_sensitive Set to true for content which may not be suitable for every audience.
-      # @option options [Twitter::Tweet] :in_reply_to_status An existing status that the update is in reply to.
-      # @option options [Integer] :in_reply_to_status_id The ID of an existing Tweet that the update is in reply to.
-      # @option options [Float] :lat The latitude of the location this tweet refers to. This option will be ignored unless it is inside the range -90.0 to +90.0 (North is positive) inclusive. It will also be ignored if there isn't a corresponding :long option.
-      # @option options [Float] :long The longitude of the location this tweet refers to. The valid ranges for longitude is -180.0 to +180.0 (East is positive) inclusive. This option will be ignored if outside that range, if it is not a number, if geo_enabled is disabled, or if there not a corresponding :lat option.
-      # @option options [Twitter::Place] :place A place in the world. These can be retrieved from {Twitter::REST::PlacesAndGeo#reverse_geocode}.
-      # @option options [String] :place_id A place in the world. These IDs can be retrieved from {Twitter::REST::PlacesAndGeo#reverse_geocode}.
-      # @option options [String] :display_coordinates Whether or not to put a pin on the exact coordinates a tweet has been sent from.
-      # @option options [Boolean, String, Integer] :trim_user Each tweet returned in a timeline will include a user object with only the author's numerical ID when set to true, 't' or 1.
-      def update_with_media(status, media, options = {})
-        options = options.dup
-        media_ids = pmap(array_wrap(media)) do |medium|
-          upload(medium)[:media_id]
-        end
-        update!(status, options.merge(media_ids: media_ids.join(',')))
-      end
-
       # Returns oEmbed for a Tweet
       #
       # @see https://dev.twitter.com/rest/reference/get/statuses/oembed
@@ -301,7 +273,7 @@ module Twitter
       # The only supported video format is mp4.
       #
       # @see https://dev.twitter.com/rest/public/uploading-media
-      def upload(media, media_type = "video/mp4") # rubocop:disable MethodLength, AbcSize
+      def upload(media, media_type) # rubocop:disable MethodLength, AbcSize
 
         init = Twitter::REST::Request.new(self, :post, 'https://upload.twitter.com/1.1/media/upload.json',
                                           command: 'INIT',
